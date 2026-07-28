@@ -9,6 +9,16 @@ from utils.text.symbols import phonemes_set
 from dp.phonemizer import Phonemizer
 import torch
 
+# Monkey-patch torch.load to force weights_only=False ONLY for this specific model file
+_original_torch_load = torch.load
+
+def _secured_torch_load(*args, **kwargs):
+    if len(args) > 0 and 'en_us_cmudict_ipa_forward.pt' in str(args[0]):
+        kwargs['weights_only'] = False
+    return _original_torch_load(*args, **kwargs)
+
+torch.load = _secured_torch_load
+
 # Regular expression matching whitespace:
 _whitespace_re = re.compile(r'\s+')
 
